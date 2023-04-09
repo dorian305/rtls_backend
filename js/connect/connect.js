@@ -91,17 +91,19 @@ function checkDeviceType(){
 
 /**
  * Periodically sends newly calculated coordinates to the server.
- * If the last coordinates and newly calculated are the same, dont send.
+ * If the last coordinates is different from the current coordinates, update last coordinates to current coordinates.
  */
 function startCoordinatesSendInterval(){
     coordinatesUpdateInterval = setInterval(() => {
-        if (Object.keys(smoothedCoordinates).length === 0) return;
+        if (smoothedCoordinates.x === 0 && smoothedCoordinates.y === 0) return;
         if (JSON.stringify(smoothedCoordinates) === JSON.stringify(lastSmoothedCoordinates)) return;
-
+        
         worker.postMessage({
             type: "coordinatesUpdate",
             coordinates: smoothedCoordinates,
         });
+        
+        lastSmoothedCoordinates = smoothedCoordinates;
     }, sendCoordsToServerInterval * 1000);
 }
 
@@ -110,8 +112,7 @@ function startCoordinatesSendInterval(){
 /**
  * Runs whenever watchPosition of geolocation notices a new coordinate update.
  * If the device hasn't connected to the server, first attempt to connect.
- * otherwise, start calculating the average of the last couple of coordinates in order to display a smooth
- * movement on the map. Also keep track of last calculated coordinates.
+ * After connection is successful, start calculating coordinates using move average method.
  */
 function gettingLocationSuccess(position){
     if (!connected){
@@ -144,15 +145,10 @@ function gettingLocationSuccess(position){
             sumY += coordinatesList[i].y;
         }
         
-        lastSmoothedCoordinates = smoothedCoordinates;
-
         smoothedCoordinates = {
-            x: sumX / coordinatesList.length,
-            y: sumY / coordinatesList.length,
+            x: Number(sumX / coordinatesList.length).toFixed(6),
+            y: Number(sumY / coordinatesList.length).toFixed(6),
         };
-
-        smoothedCoordinates.x = Number(smoothedCoordinates.x.toFixed(6));
-        smoothedCoordinates.y = Number(smoothedCoordinates.y.toFixed(6));
 
         coordsElem.textContent = `(X: ${smoothedCoordinates.x}, Y: ${smoothedCoordinates.y})`;
     }
