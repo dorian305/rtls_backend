@@ -1,4 +1,4 @@
-const worker = new Worker("js/connect/locationUpdater.js?ver=1.4");
+const worker = new Worker("js/connect/locationUpdater.js?ver=1.5");
 const animationPulse = document.querySelector("#animation-pulse");
 const statusElem = document.querySelector("#connection-status");
 const deviceIDElem = document.querySelector("#device-id");
@@ -48,7 +48,7 @@ function gettingLocationSuccess(position){
             coordinates: newCoordinates,
         });
 
-        coordsElem.textContent = `(${newCoordinates.x}, ${newCoordinates.y})`;
+        coordsElem.textContent = `X: ${newCoordinates.x}, Y: ${newCoordinates.y}`;
     }
 }
 

@@ -1,6 +1,6 @@
-const protocol = "ws";
-const endpoint = "localhost";
-const socket = new WebSocket(`${protocol}://${endpoint}:3001`);
+import { port, protocol, endpoint } from "./websocketInit.js";
+
+const socket = new WebSocket(`${protocol}://${endpoint}:${port}`);
 
 
 socket.addEventListener('open', event => {
@@ -17,7 +17,7 @@ socket.addEventListener('message', event => {
     /**
      * Need to parse the serialized JSON object before using it.
      */
-    data = JSON.parse(event.data);
+    const data = JSON.parse(event.data);
 
     if (data.type === "fetchInitial"){
         /**

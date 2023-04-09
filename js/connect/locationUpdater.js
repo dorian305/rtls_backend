@@ -1,5 +1,4 @@
-const protocol = "ws";
-const endpoint = "localhost";
+importScripts("./websocketInit.js");
 
 let socket; // Websocket handler
 let localDevice = {}; // This device handler
@@ -20,7 +19,7 @@ self.addEventListener("message", event => {
         /**
          * Lets web worker know the application is ready to initiate websocket connection to the server.
          */
-        socket = new WebSocket(`${protocol}://${endpoint}:3001`);
+        socket = new WebSocket(`${protocol}://${endpoint}:${port}`);
 
         /**
          * When connection to the server is successfully established, send the device information to the server,
