@@ -131,30 +131,11 @@ function gettingLocationSuccess(position){
         smoothedCoordinates.x /= coordinatesList.length;
         smoothedCoordinates.y /= coordinatesList.length;
 
+        smoothedCoordinates.x = Number(smoothedCoordinates.x.toFixed(6));
+        smoothedCoordinates.y = Number(smoothedCoordinates.y.toFixed(6));
+
         coordsElem.textContent = `X: ${smoothedCoordinates.x}, Y: ${smoothedCoordinates.y}`;
     }
-
-    // if (!connected){
-    //     connected = "pending";
-    //     worker.postMessage({
-    //         type: "connectToServer",
-    //         deviceType: deviceType,
-    //     });
-    //     statusElem.textContent = "Connecting to the server...";
-    // }
-    // else {
-    //     const newCoordinates = {
-    //         x: position.coords.latitude,
-    //         y: position.coords.longitude,
-    //     };
-        
-    //     worker.postMessage({
-    //         type: "coordinatesUpdate",
-    //         coordinates: newCoordinates,
-    //     });
-
-    //     coordsElem.textContent = `X: ${newCoordinates.x}, Y: ${newCoordinates.y}`;
-    // }
 }
 
 

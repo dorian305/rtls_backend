@@ -50,8 +50,8 @@ socket.addEventListener('message', event => {
             storedDeviceToUpdate.coordinates.y,
         ));
 
-        console.log(`Received updated coordinates from ${storedDeviceToUpdate.id}`);
-        console.table(storedDeviceToUpdate.coordinates);
+        // console.log(`Received updated coordinates from ${storedDeviceToUpdate.id}`);
+        // console.table(storedDeviceToUpdate.coordinates);
     }
 
 

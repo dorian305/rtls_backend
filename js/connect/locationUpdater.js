@@ -75,7 +75,7 @@ self.addEventListener("message", event => {
     if (data.type === "coordinatesUpdate"){
         localDevice.coordinates = data.coordinates;
 
-        console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
+        // console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
         
         socket.send(JSON.stringify({
             type: "locationUpdate",

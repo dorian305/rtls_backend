@@ -116,8 +116,8 @@ server.on('connection', socket => {
             storedDeviceToUpdate.coordinates.x = receivedData.device.coordinates.x;
             storedDeviceToUpdate.coordinates.y = receivedData.device.coordinates.y;
 
-            console.log(`Received new coordinates from ${storedDeviceToUpdate.id}`);
-            console.table(storedDeviceToUpdate);
+            // console.log(`Received new coordinates from ${storedDeviceToUpdate.id}`);
+            // console.table(storedDeviceToUpdate);
 
             if (dashboardSockets){
                 dashboardSockets.forEach(dashboardSocket => {
