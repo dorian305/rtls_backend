@@ -1,0 +1,24 @@
+* {
+    box-sizing: border-box;
+}
+  
+body {
+    margin: 0;
+    background-color: #0c1014;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#device-id, #connection-status, #coordinates {
+    margin: 10px;
+    color: white;
+    text-align: center;
+    font-size: clamp(1rem, 1.5vw, 2.5rem);
+}
