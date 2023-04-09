@@ -10,8 +10,8 @@ const deviceType = checkDeviceType();
 const worker = new Worker("js/connect/locationUpdater.js?ver=1.5");
 
 let connected = false;
-let smoothedCoordinates = {};
-let lastSmoothedCoordinates = {};
+let smoothedCoordinates = {x: 0, y: 0};
+let lastSmoothedCoordinates = {x: 0, y: 0};
 let coordinatesUpdateInterval = null;
 
 
