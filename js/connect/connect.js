@@ -4,8 +4,16 @@ const statusElem = document.querySelector("#connection-status");
 const deviceIDElem = document.querySelector("#device-id");
 const coordsElem = document.querySelector("#coordinates");
 const deviceType = checkDeviceType();
+const coordinatesList = [];
+const numberOfLastSavedCoordinates = 10;
+const sendCoordsToServerInterval = 100; // in ms
+
 
 let connected = false;
+let smoothedCoordinates;
+let coordinatesUpdateInterval;
+
+
 
 /**
  * Prompting the device for location services and initiates connection to the server
@@ -28,52 +36,6 @@ else {
 }
 
 
-function gettingLocationSuccess(position){
-    if (!connected){
-        connected = "pending";
-        worker.postMessage({
-            type: "connectToServer",
-            deviceType: deviceType,
-        });
-        statusElem.textContent = "Connecting to the server...";
-    }
-    else {
-        const newCoordinates = {
-            x: position.coords.latitude,
-            y: position.coords.longitude,
-        };
-        
-        worker.postMessage({
-            type: "coordinatesUpdate",
-            coordinates: newCoordinates,
-        });
-
-        coordsElem.textContent = `X: ${newCoordinates.x}, Y: ${newCoordinates.y}`;
-    }
-}
-
-function gettingLocationError(error){
-    let errorString = "";
-
-    switch (error.code) {
-        case error.PERMISSION_DENIED:
-            errorString = "User denied the request for Geolocation.";
-            break;
-        case error.POSITION_UNAVAILABLE:
-            errorString = "Location information is unavailable.";
-            break;
-        case error.TIMEOUT:
-            errorString = "The request to get user location timed out.";
-            break;
-        default:
-            errorString = "An unknown error occurred.";
-            break;
-    }
-
-    statusElem.textContent = errorString;
-}
-
-
 /**
  * Allows for data communication between worker thread and main thread (this).
  */
@@ -84,9 +46,11 @@ worker.addEventListener("message", event => {
     const data = event.data;
 
     if (data.type === "connectionSuccess"){
-        statusElem.innerHTML = "Connected to the server.<br>Your location is being tracked.";
+        statusElem.textContent = "Connected to the server.";
+        coordsElem.textContent = "Fetching your device's coordinates...";
         animationPulse.style.display = "block";
         connected = true;
+        startCoordinatesSendInterval();
     }
     
     
@@ -113,4 +77,107 @@ function checkDeviceType(){
     if (isMobile) return "mobile";
     if (isTablet) return "tablet";
     if (!isMobile && !isTablet) return "pc";
+}
+
+
+function startCoordinatesSendInterval(){
+    coordinatesUpdateInterval = setInterval(() => {
+        if (!smoothedCoordinates) return;
+
+        worker.postMessage({
+            type: "coordinatesUpdate",
+            coordinates: smoothedCoordinates,
+        });
+    }, sendCoordsToServerInterval);
+}
+
+
+
+/**
+ * Runs whenever watchPosition of geolocation notices a new coordinate update.
+ */
+function gettingLocationSuccess(position){
+    if (!connected){
+        connected = "pending";
+        worker.postMessage({
+            type: "connectToServer",
+            deviceType: deviceType,
+        });
+        statusElem.textContent = "Connecting to the server...";
+    }
+
+    else {
+        const newCoordinates = {
+            x: position.coords.latitude,
+            y: position.coords.longitude,
+        };
+        
+        // Adding the new coordinates to the list
+        coordinatesList.push(newCoordinates);
+
+        // Keeping only the last 10 coordinates
+        if (coordinatesList.length > numberOfLastSavedCoordinates) {
+            coordinatesList.shift();
+        }
+        
+        // Averaging the coordinates in the list to get the smoothed coordinates
+        smoothedCoordinates = coordinatesList.reduce((acc, cur) => {
+            return {
+                x: acc.x + cur.x,
+                y: acc.y + cur.y,
+            };
+        }, {x: 0, y: 0});
+
+        smoothedCoordinates.x /= coordinatesList.length;
+        smoothedCoordinates.y /= coordinatesList.length;
+
+        coordsElem.textContent = `X: ${smoothedCoordinates.x}, Y: ${smoothedCoordinates.y}`;
+    }
+
+    // if (!connected){
+    //     connected = "pending";
+    //     worker.postMessage({
+    //         type: "connectToServer",
+    //         deviceType: deviceType,
+    //     });
+    //     statusElem.textContent = "Connecting to the server...";
+    // }
+    // else {
+    //     const newCoordinates = {
+    //         x: position.coords.latitude,
+    //         y: position.coords.longitude,
+    //     };
+        
+    //     worker.postMessage({
+    //         type: "coordinatesUpdate",
+    //         coordinates: newCoordinates,
+    //     });
+
+    //     coordsElem.textContent = `X: ${newCoordinates.x}, Y: ${newCoordinates.y}`;
+    // }
+}
+
+
+/**
+ * If watchPosition fails to get location information.
+ */
+function gettingLocationError(error){
+    let errorString = "";
+
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            errorString = "User denied the request for Geolocation.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            errorString = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            errorString = "The request to get user location timed out.";
+            break;
+        default:
+            errorString = "An unknown error occurred.";
+            break;
+    }
+
+    statusElem.textContent = errorString;
 }
