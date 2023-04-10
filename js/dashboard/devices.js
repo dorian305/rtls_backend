@@ -91,46 +91,61 @@ socket.addEventListener('message', event => {
 });
 
 
+/**
+ * When device connects, add element to the list of connected elements.
+ */
 const addDeviceToList = function(device) {
-    deviceListContainer.innerHTML += createDeviceElem(device);
+    deviceListContainer.appendChild(createDeviceElem(device));
 }
 
 
-
+/**
+ * When device disconnects, remove element from the list of connected elements.
+ */
 const removeDeviceFromList = function(device) {
     const deviceElem = deviceListContainer.querySelector(`[data-id="${device.id}"]`);
     deviceListContainer.removeChild(deviceElem);
 }
 
 
+/**
+ * Creating the html element for the connected device.
+ */
 const createDeviceElem = function(device){
-    let deviceImageSrc;
-
-    if (device.type === "mobile"){
-        deviceImageSrc = "images/mobile.png";
+    const deviceImageCollection = {
+        mobile: "images/mobile.png",
+        tablet: "images/tablet.png",
+        pc: "images/pc.png",
     }
+    const deviceImageSrc = deviceImageCollection[device.type];
 
-    else if (device.type === "tablet"){
-        deviceImageSrc = "images/tablet.png";
-    }
+    const connectedDeviceElem = document.createElement("div");
+    const deviceInformationElem = document.createElement("div");
+    const deviceImageElem = document.createElement("img");
+    const spanElem = document.createElement("span");
+    const actionButtonsElem = document.createElement("div");
+    const actionButtonElem = document.createElement("button");
 
-    else {
-        deviceImageSrc = "images/pc.png";
-    }
+    connectedDeviceElem.setAttribute("data-id", device.id);
+    connectedDeviceElem.setAttribute("class", "connected-device-elem");
+    deviceInformationElem.setAttribute("class", "device-information");
+    deviceImageElem.setAttribute("src", deviceImageSrc);
+    deviceImageElem.setAttribute("class", "device-image");
+    spanElem.textContent = device.id;
+    actionButtonsElem.setAttribute("class", "action-buttons");
+    actionButtonElem.setAttribute("data-following", "false");
+    actionButtonElem.textContent = "Track";
 
-    const html = `
-        <div class="connected-device-elem" data-id=${device.id}>
-        <div class="device-information">
-            <img src="${deviceImageSrc}" class="device-image">
-            <span>${device.id}</span>
-        </div>
-        <div class="action-buttons">
-                <button>Button 1</button>
-                <button>Button 2</button>
-                <button>Button 3</button>
-            </div>
-        </div>
-    `;
+    connectedDeviceElem.appendChild(deviceInformationElem);
+    connectedDeviceElem.appendChild(actionButtonsElem);
+    deviceInformationElem.appendChild(deviceImageElem);
+    deviceInformationElem.appendChild(spanElem);
+    actionButtonsElem.appendChild(actionButtonElem);
 
-    return html;
+    // Add event listener for the follow button
+    actionButtonElem.addEventListener("click", e => {
+        followDevice(e.target, device.marker);
+    });
+
+    return connectedDeviceElem;
 }
