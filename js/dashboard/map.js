@@ -61,8 +61,8 @@ const followDevice = function(button, markerToFollow){
 		document.querySelectorAll('.action-buttons button').forEach(btn => {
 			clearInterval(followMarkerIntervalHandler);
 
-			button.setAttribute("data-following", "false");
-			button.textContent = "Track";
+			btn.setAttribute("data-following", "false");
+			btn.textContent = "Track";
 		});
 
 		button.textContent = "Stop tracking";
