@@ -26,6 +26,13 @@ else {
     });
 }
 
+
+
+/**
+ * This holds all the socket connections that are connected to the server (devices + dashboard).
+ */
+let sockets = [];
+
 /**
  * Storing dashboard sockets to be able to send information to all dashboards that are connected.
  */
@@ -36,16 +43,34 @@ let dashboardSockets = [];
  */
 let connectedDevices = [];
 
+
 server.on('connection', socket => {
     /**
      * Assign unique identifier for each socket.
      */
     socket.id = uuidv4();
+
+    /**
+     * Store each socket that connects to the server.
+     */
+    sockets.push(socket);
+
     console.log(`A new websocket connection has been established (socket id: ${socket.id})`);
 
 
     socket.on('message', receivedData => {
         receivedData = JSON.parse(receivedData)
+
+        /**
+         * Listening for pong message from connected clients. If pong is sent by the client,
+         * remove it from the object.
+         */
+        if (receivedData.type === "pong"){
+            delete needsToAcknowledgePing[receivedData.socketId];
+            
+            console.log(`Received pong from ${receivedData.socketId}`);
+        }
+
 
         if (receivedData.type === "fetchInitial"){
             /**
@@ -53,6 +78,7 @@ server.on('connection', socket => {
              * Store the dashboard's websocket because it is needed for receiving device updates.
              * 
              * Also set a flag that the socket is dashboard to be able to differentiate from device socket.
+             * Send the connected dashboard's ID back to the client.
              */
             dashboardSockets.push(socket);
 
@@ -60,6 +86,7 @@ server.on('connection', socket => {
 
             socket.send(JSON.stringify({
                 type: "fetchInitial",
+                socketId: socket.id,
                 connectedDevices: connectedDevices,
             }));
         }
@@ -79,6 +106,7 @@ server.on('connection', socket => {
              */
             const newlyConnectedDevice = {
                 id: socket.id,
+                socket: socket,
                 type: receivedData.device.type,
                 coordinates: receivedData.device.coordinates,
             };
@@ -140,35 +168,78 @@ server.on('connection', socket => {
          * Otherwise it was a device that was disconnected, find which device has disconnected,
          * remove that device from the list of connected devices and send the device to the dashboard
          * so the dashboard can remove it from the map.
+         * 
+         * Also remove the socket that was tied to the device that was disconnected.
          */
         if (socket.isDashboard){
-            dashboardSockets.filter(dashboardSocket => dashboardSocket.id !== socket.id);
+            dashboardSockets = dashboardSockets.filter(dashboardSocket => dashboardSocket.id !== socket.id);
 
             console.log(`Dashboard connection with the id ${socket.id} has been closed.\n`);
-            return;
         }
 
-        let disconnectedDevice = null;
-
-        connectedDevices = connectedDevices.filter(device => {
-            const isDisconnected = device.id === socket.id;
-
-            if (isDisconnected){
-                disconnectedDevice = device;
-            }
-            
-            return !isDisconnected;
-        });
-
-        if (dashboardSockets){
-            dashboardSockets.forEach(dashboardSocket => {
-                dashboardSocket.send(JSON.stringify({
-                    type: "deviceDisconnected",
-                    device: disconnectedDevice,
-                }))
+        else {
+            let disconnectedDevice = null;
+            connectedDevices = connectedDevices.filter(device => {
+                const isDisconnected = device.id === socket.id;
+    
+                if (isDisconnected){
+                    disconnectedDevice = device;
+                }
+                
+                return !isDisconnected;
             });
+    
+            if (dashboardSockets){
+                dashboardSockets.forEach(dashboardSocket => {
+                    dashboardSocket.send(JSON.stringify({
+                        type: "deviceDisconnected",
+                        device: disconnectedDevice,
+                    }));
+                });
+            }
+    
+            
+            console.log(`Device with the id ${disconnectedDevice.id} has been closed.\n`);
         }
 
-        console.log(`Device with the id ${socket.id} has been closed.\n`);
+        sockets = sockets.filter(s => s.id !== socket.id);
     });
 });
+
+
+/**
+ * Pings all the connected clients and adds the flag for pinged client.
+ * Afterwards starts a timeout window, which, on expiration, iterates over the flags for each pinged client,
+ * and if the clients' flags are not cleared, closes the connection because that means the connection is dead.
+ */
+const pingMessage = JSON.stringify({type: "ping"});
+const pingClientsIntervalS = 5;
+const pongServerTimeoutS = 1;
+const needsToAcknowledgePing = {};
+const pingConnectedClients = function(){
+    if (sockets.length === 0) return;
+
+    sockets.forEach(socket => {
+        socket.send(pingMessage);
+        needsToAcknowledgePing[socket.id] = "pinged";
+
+        console.log(`Pinged ${socket.id}`);
+    });
+
+    setTimeout(() => {
+        if (Object.keys(needsToAcknowledgePing).length === 0) return;
+
+        for (const socketId of needsToAcknowledgePing){
+            sockets.forEach(socket => {
+                if (socket.id === socketId){
+                    socket.close();
+                    
+                    console.log(`No response from ${socket.id}, closing socket.`);
+                }
+            });
+
+            delete needsToAcknowledgePing[socketId];
+        }
+    }, pongServerTimeoutS * 1000);
+}
+setInterval(pingConnectedClients, pingClientsIntervalS * 1000);

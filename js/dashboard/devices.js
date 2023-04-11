@@ -2,6 +2,8 @@ import { port, protocol, endpoint } from "./websocketInit.js";
 
 const socket = new WebSocket(`${protocol}://${endpoint}:${port}`);
 
+let socketId = "";
+
 
 socket.addEventListener('open', event => {
     /**
@@ -10,6 +12,22 @@ socket.addEventListener('open', event => {
     socket.send(JSON.stringify({type: "fetchInitial"}));
 });
 
+
+/**
+ * Lost the connection to the server.
+ */
+socket.addEventListener('close', event => {
+    alert("The connection to the websocket server has been lost. Please refresh the page");
+});
+
+
+
+/**
+ * Error when trying to establish a connection to the websocket server.
+ */
+socket.addEventListener('error', event => {
+    alert("An error occurred while connecting to the websocket server. Please refresh the page to try again.");
+});
 
 
 
@@ -21,11 +39,12 @@ socket.addEventListener('message', event => {
 
     if (data.type === "fetchInitial"){
         /**
-         * When dashboard connects to the server, it requests information about the connected devices.
-         * Once the connected devices are obtained, store them, create markers for each device
-         * and display their positions on the map. Also add the connected devices in the left panel.
+         * When dashboard connects to the server, it requests information about the connected devices and socket id.
+         * Once the information is obtained, store it, create markers for each device
+         * and display their positions on the map. Also add the devices in the left panel.
          */
         connectedDevices = data.connectedDevices;
+        socketId = data.socketId;
 
         connectedDevices.forEach(device => {
             device.marker = createMarker(device.coordinates);
@@ -88,6 +107,19 @@ socket.addEventListener('message', event => {
         removeDeviceFromList(storedDeviceToRemove);
     }
 
+    
+    
+    if (data.type === "ping"){
+        /**
+         * The server has pinged the connection, send back pong to acknowledge.
+         */
+        socket.send(JSON.stringify({
+            type: "pong",
+            socketId: socketId,
+        }));
+
+        console.log(`Server pinged me, sending back pong...`);
+    }
 });
 
 
