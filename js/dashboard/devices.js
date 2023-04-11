@@ -176,7 +176,7 @@ const createDeviceElem = function(device){
 
     // Add event listener for the follow button
     actionButtonElem.addEventListener("click", e => {
-        followDevice(e.target, device.marker);
+        followDevice(e.target, device);
     });
 
     return connectedDeviceElem;

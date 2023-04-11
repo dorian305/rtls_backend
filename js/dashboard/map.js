@@ -46,7 +46,7 @@ map.on("zoomend", () => {
 let followMarkerFlag = false;
 let followMarkerInterval = 0.5;
 let followMarkerIntervalHandler;
-const followDevice = function(button, markerToFollow){
+const followDevice = function(button, device){
 	if (button.getAttribute("data-following") === "true"){
 		clearInterval(followMarkerIntervalHandler);
 
@@ -68,15 +68,24 @@ const followDevice = function(button, markerToFollow){
 		button.textContent = "Stop tracking";
 		button.setAttribute("data-following", "true");
 		
-		panMap(markerToFollow);
+		panMap(device.marker);
 
 		followMarkerIntervalHandler = setInterval(() => {
-			panMap(markerToFollow);
+			panMap(device.id, device.marker);
 		}, followMarkerInterval * 1000);
 	}
 }
 
-const panMap = function(markerToFollow){
+const panMap = function(deviceId, markerToFollow){
+	/**
+	 * Check whether the device that we are tracking is still connected to the server.
+	 * If it's not, stop following the device's marker.
+	 */
+	if (!connectedDevices.some(device => device.id === deviceId)){
+		clearInterval(followMarkerIntervalHandler);
+		return;
+	}
+
 	const panAnimationDuration = 0.5;
 	const options = {
 		pan: {
