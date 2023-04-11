@@ -213,8 +213,8 @@ server.on('connection', socket => {
  * and if the clients' flags are not cleared, closes the connection because that means the connection is dead.
  */
 const pingMessage = JSON.stringify({type: "ping"});
-const pingClientsIntervalS = 5;
-const pongServerTimeoutS = 1;
+const pingClientsIntervalS = 60;
+const pongServerTimeoutS = 5;
 const needsToAcknowledgePing = {};
 const pingConnectedClients = function(){
     if (sockets.length === 0) return;
