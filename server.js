@@ -229,7 +229,7 @@ const pingConnectedClients = function(){
     setTimeout(() => {
         if (Object.keys(needsToAcknowledgePing).length === 0) return;
 
-        for (const socketId of needsToAcknowledgePing){
+        for (const [socketId, value] of Object.entries(needsToAcknowledgePing)){
             sockets.forEach(socket => {
                 if (socket.id === socketId){
                     socket.close();
