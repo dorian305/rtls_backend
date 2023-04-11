@@ -39,6 +39,13 @@ self.addEventListener("message", event => {
             self.postMessage({type: "connectionSuccess"});
         });
 
+        /**
+         * Closing the connection to the websocket server.
+         */
+        socket.addEventListener('close', event => {
+            alert("Connection to the server has been lost.");
+        });
+
 
         /**
          * Handle if the connection to the server fails.
@@ -51,13 +58,13 @@ self.addEventListener("message", event => {
         });
 
 
-        /**
-         * When the server returns the generated ID of the device, set the device ID to the generated ID.
-         */
         socket.addEventListener('message', event => {
             const data = JSON.parse(event.data);
-        
+            
             if (data.type === "deviceConnected"){
+                /**
+                 * When the server returns the generated ID of the device, set the device ID to the generated ID.
+                 */
                 const updatedDevice = data.device;
                 localDevice = updatedDevice;
 
@@ -65,6 +72,19 @@ self.addEventListener("message", event => {
                     type: "sendingDeviceID",
                     deviceID: localDevice.id,
                 });
+            }
+
+
+            if (data.type === "ping"){
+                /**
+                 * Server sent a ping, respond with pong.
+                 */
+                socket.send(JSON.stringify({
+                    type: "pong",
+                    socketId: localDevice.id,
+                }));
+
+                console.log("Server pinged me. Sending back pong...");
             }
         });
     }
