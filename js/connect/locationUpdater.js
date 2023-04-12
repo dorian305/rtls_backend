@@ -43,7 +43,10 @@ self.addEventListener("message", event => {
          * Closing the connection to the websocket server.
          */
         socket.addEventListener('close', event => {
-            alert("Connection to the server has been lost.");
+            self.postMessage({
+                type: "connectionClosed",
+                error: "Connection to the server has been lost.",
+            });
         });
 
 

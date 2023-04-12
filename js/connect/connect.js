@@ -7,8 +7,9 @@ const coordinatesList = [];
 const numberOfLastSavedCoordinates = 10;
 const sendCoordsToServerInterval = 0.1; // in seconds
 const deviceType = checkDeviceType();
-const worker = new Worker("js/connect/locationUpdater.js?ver=1.5");
+const worker = new Worker("js/connect/locationUpdater.js?ver=1.6");
 
+let locationWatcher;
 let connected = false;
 let smoothedCoordinates = {x: 0, y: 0};
 let lastSmoothedCoordinates = {x: 0, y: 0};
@@ -33,7 +34,7 @@ else {
         maximumAge: 0,
     };
 
-    navigator.geolocation.watchPosition(gettingLocationSuccess, gettingLocationError, locationOptions);
+    locationWatcher = navigator.geolocation.watchPosition(gettingLocationSuccess, gettingLocationError, locationOptions);
 }
 
 
@@ -61,8 +62,30 @@ worker.addEventListener("message", event => {
      * Worker failed to connect to the server.
      */
     if (data.type === "connectionError"){
-        statusElem.textContent = data.error;
         connected = false;
+        navigator.geolocation.clearWatch(locationWatcher);
+
+        statusElem.textContent = data.error;
+    }
+
+
+    /**
+     * Worker has experienced connection closing.
+     */
+    if (data.type === "connectionClosed"){
+        connected = false;
+        navigator.geolocation.clearWatch(locationWatcher);
+
+        Swal.fire({
+            title: "Error!",
+            text: "Connection to the server has been lost.",
+            icon: "error",
+            confirmButtonText: "Reload",
+        }).then(res => {
+            if (res.isConfirmed){
+                location.reload();
+            }
+        });
     }
 
 
