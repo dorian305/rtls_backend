@@ -17,7 +17,16 @@ socket.addEventListener('open', event => {
  * Lost the connection to the server.
  */
 socket.addEventListener('close', event => {
-    alert("The connection to the websocket server has been lost. Please refresh the page");
+    Swal.fire({
+        title: "Error!",
+        text: "The connection to the websocket server has been lost.",
+        icon: "error",
+        confirmButtonText: "Reload",
+    }).then(res => {
+        if (res.isConfirmed){
+            location.reload();
+        }
+    });
 });
 
 
@@ -26,7 +35,16 @@ socket.addEventListener('close', event => {
  * Error when trying to establish a connection to the websocket server.
  */
 socket.addEventListener('error', event => {
-    alert("An error occurred while connecting to the websocket server. Please refresh the page to try again.");
+    Swal.fire({
+        title: "Error!",
+        text: "An error occured while communicating with the server.",
+        icon: "error",
+        confirmButtonText: "Reload",
+    }).then(res => {
+        if (res.isConfirmed){
+            location.reload();
+        }
+    });
 });
 
 
