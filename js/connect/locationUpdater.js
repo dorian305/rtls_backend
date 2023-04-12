@@ -60,9 +60,6 @@ self.addEventListener("message", event => {
             const data = JSON.parse(event.data);
             
             if (data.type === "deviceConnected"){
-                /**
-                 * When the server returns the generated ID of the device, set the device ID to the generated ID.
-                 */
                 const updatedDevice = data.device;
                 localDevice = updatedDevice;
 
@@ -92,6 +89,8 @@ self.addEventListener("message", event => {
      */
     if (data.type === "coordinatesUpdate"){
         localDevice.coordinates = data.coordinates;
+
+        alert(localDevice.coordinates);
 
         // console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
         

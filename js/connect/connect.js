@@ -7,7 +7,7 @@ const coordinatesList = [];
 const numberOfLastSavedCoordinates = 10;
 const sendCoordsToServerInterval = 0.1; // in seconds
 const deviceType = checkDeviceType();
-const worker = new Worker("js/connect/locationUpdater.js?ver=1.6");
+const worker = new Worker("js/connect/locationUpdater.js?ver=1.7");
 
 let locationWatcher;
 let connected = false;
