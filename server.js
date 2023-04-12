@@ -214,7 +214,7 @@ server.on('connection', socket => {
  */
 const pingMessage = JSON.stringify({type: "ping"});
 const pingClientsIntervalS = 60;
-const pongServerTimeoutS = 10;
+const pongServerTimeoutS = 5;
 const needsToAcknowledgePing = {};
 const pingConnectedClients = function(){
     if (sockets.length === 0) return;
@@ -230,12 +230,13 @@ const pingConnectedClients = function(){
         if (Object.keys(needsToAcknowledgePing).length === 0) return;
 
         for (const [socketId, value] of Object.entries(needsToAcknowledgePing)){
-            const socketToClose = sockets.find(socket => socket.id === socketId);
-
-            if (socketToClose){
-                socketToClose.close();
-                console.log(`No response from ${socketToClose.id}, closing socket.`);
-            }
+            sockets.forEach(socket => {
+                if (socket.id === socketId){
+                    socket.close();
+                    
+                    console.log(`No response from ${socket.id}, closing socket.`);
+                }
+            });
 
             delete needsToAcknowledgePing[socketId];
         }
