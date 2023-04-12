@@ -1,7 +1,7 @@
 const coordsElem = document.querySelector("#coordinates");
 const deviceIDElem = document.querySelector("#device-id");
 const statusElem = document.querySelector("#connection-status");
-const animationPulseElem = document.querySelector("#animation-pulse");
+const animationPulseElem = document.querySelector("#animation-init");
 
 const coordinatesList = [];
 const numberOfLastSavedCoordinates = 10;
@@ -11,6 +11,7 @@ const worker = new Worker("js/connect/locationUpdater.js?ver=1.6");
 
 let locationWatcher;
 let connected = false;
+let fetchedLocationInit = false;
 let smoothedCoordinates = {x: 0, y: 0};
 let lastSmoothedCoordinates = {x: 0, y: 0};
 let coordinatesUpdateInterval = null;
@@ -18,12 +19,11 @@ let coordinatesUpdateInterval = null;
 
 
 /**
- * Prompting the device for location services and initiates connection to the server
- * if the service is allowed through a web worker.
+ * Prompting the device for location services.
+ * If location services are denied, displays the message to user to allow it.
  * 
- * Otherwise notifies the user that location services are required to run the application.
+ * Attempts to fetch the location information of the device.
  */
-statusElem.textContent = "Please allow location permission to use the service.";
 if (!"geolocation" in navigator){
     statusElem.textContent = "Geolocation is not supported by this browser.";
 }
@@ -52,8 +52,7 @@ worker.addEventListener("message", event => {
      */
     if (data.type === "connectionSuccess"){
         statusElem.textContent = "Connected to the server.";
-        coordsElem.textContent = "Fetching your device's coordinates...";
-        animationPulseElem.style.display = "block";
+        animationPulseElem.id = "animation-pulse";
         connected = true;
         startCoordinatesSendInterval();
     }
@@ -134,46 +133,45 @@ function startCoordinatesSendInterval(){
 
 /**
  * Runs whenever watchPosition of geolocation notices a new coordinate update.
- * If the device hasn't connected to the server, first attempt to connect.
- * After connection is successful, start calculating coordinates using move average method.
+ * Once location information is retrieved, establish connection to the server.
  */
 function gettingLocationSuccess(position){
-    if (!connected){
+    const newCoordinates = {
+        x: position.coords.latitude,
+        y: position.coords.longitude,
+    };
+    
+    coordinatesList.push(newCoordinates);
+
+    if (coordinatesList.length > numberOfLastSavedCoordinates) {
+        coordinatesList.shift();
+    }
+    
+    let sumX = 0;
+    let sumY = 0;
+    for (let i = 0; i < coordinatesList.length; i++) {
+        sumX += coordinatesList[i].x;
+        sumY += coordinatesList[i].y;
+    }
+    
+    smoothedCoordinates = {
+        x: Number(sumX / coordinatesList.length).toFixed(6),
+        y: Number(sumY / coordinatesList.length).toFixed(6),
+    };
+
+    coordsElem.textContent = `(Latitude: ${smoothedCoordinates.x}, Longitude: ${smoothedCoordinates.y})`;
+
+    if (!fetchedLocationInit){
+        fetchedLocationInit = true;
         connected = "pending";
 
         worker.postMessage({
             type: "connectToServer",
             deviceType: deviceType,
+            coordinates: smoothedCoordinates,
         });
 
         statusElem.textContent = "Connecting to the server...";
-    }
-
-    else {
-        const newCoordinates = {
-            x: position.coords.latitude,
-            y: position.coords.longitude,
-        };
-        
-        coordinatesList.push(newCoordinates);
-
-        if (coordinatesList.length > numberOfLastSavedCoordinates) {
-            coordinatesList.shift();
-        }
-        
-        let sumX = 0;
-        let sumY = 0;
-        for (let i = 0; i < coordinatesList.length; i++) {
-            sumX += coordinatesList[i].x;
-            sumY += coordinatesList[i].y;
-        }
-        
-        smoothedCoordinates = {
-            x: Number(sumX / coordinatesList.length).toFixed(6),
-            y: Number(sumY / coordinatesList.length).toFixed(6),
-        };
-
-        coordsElem.textContent = `(X: ${smoothedCoordinates.x}, Y: ${smoothedCoordinates.y})`;
     }
 }
 

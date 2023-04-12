@@ -3,7 +3,6 @@
     height: 50px;
     margin: 50px;
     border-radius: 100%;
-    display: none;
     background-image: url("../images/location.png");
     background-size: 70%;
     background-position: center;
@@ -20,4 +19,35 @@
     100% {
       box-shadow: 0 0 0 50px rgba(21, 56, 91, 0);
     }
+}
+
+
+#animation-init {
+	width: 50px;
+	height: 50px;
+	margin: 50px;
+	border-radius: 100%;
+	background-color: blue;
+	animation: init 1.5s ease-in-out infinite;
   }
+  
+@keyframes init {
+	0% {
+		transform: scale(1);
+		background-color: rgb(0 154 255);
+	}
+	
+	33% {
+		transform: scale(1.5);
+		background-color: rgb(0 190 255);
+	}
+	66% {
+		transform: scale(0.7);
+		background-color: rgb(0 147 197);
+	}
+	100% {
+		transform: scale(1);
+		background-color: rgb(0 154 255);
+	}
+}
+  

@@ -2,7 +2,7 @@ importScripts("./websocketInit.js");
 
 let socket; // Websocket handler
 let localDevice = {}; // This device handler
-let coordinates = {x: 0, y: 0,}; // The device's coordinates
+let coordinates = {}; // The device's coordinates
 
 /**
  * We setup this event listener so we can communicate with the web worker from the main thread and
@@ -21,15 +21,10 @@ self.addEventListener("message", event => {
          */
         socket = new WebSocket(`${protocol}://${endpoint}:${port}`);
 
-        /**
-         * When connection to the server is successfully established, send the device information to the server,
-         * to fetch unique identifier.
-         * 
-         * Also update the status in HTML.
-         */
+
         socket.addEventListener('open', event => {
             localDevice.type = data.deviceType;
-            localDevice.coordinates = coordinates;
+            localDevice.coordinates = data.coordinates;
 
             socket.send(JSON.stringify({
                 type: "deviceConnected",
