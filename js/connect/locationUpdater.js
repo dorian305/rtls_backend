@@ -20,12 +20,11 @@ self.addEventListener("message", event => {
          */
         socket = new WebSocket(`${protocol}://${endpoint}:${port}`);
 
+        localDevice.type = data.deviceType;
+        localDevice.coordinates = data.coordinates;
+        localDevice.name = data.deviceName;
 
         socket.addEventListener('open', event => {
-            localDevice.type = data.deviceType;
-            localDevice.coordinates = data.coordinates;
-            localDevice.name = data.deviceName;
-
             socket.send(JSON.stringify({
                 type: "deviceConnected",
                 device: localDevice,
@@ -60,8 +59,7 @@ self.addEventListener("message", event => {
             const data = JSON.parse(event.data);
             
             if (data.type === "deviceConnected"){
-                const updatedDevice = data.device;
-                localDevice = updatedDevice;
+                localDevice = data.device;
 
                 self.postMessage({
                     type: "sendingDeviceID",
@@ -90,11 +88,15 @@ self.addEventListener("message", event => {
     if (data.type === "coordinatesUpdate"){
         localDevice.coordinates = data.coordinates;
 
-        // console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
-        
-        socket.send(JSON.stringify({
-            type: "locationUpdate",
-            device: localDevice,
-        }));
+        // Do not send coordinates if the device's ID hasn't been established.
+        // This check is because the update might get sent before the server returns the ID assigned to the device, which crashes the app.
+        if (localDevice.id){
+            console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
+            
+            socket.send(JSON.stringify({
+                type: "locationUpdate",
+                device: localDevice,
+            }));
+        }
     }
 });
