@@ -2,7 +2,6 @@ importScripts("./websocketInit.js");
 
 let socket; // Websocket handler
 let localDevice = {}; // This device handler
-let coordinates = {}; // The device's coordinates
 
 /**
  * We setup this event listener so we can communicate with the web worker from the main thread and
@@ -25,6 +24,7 @@ self.addEventListener("message", event => {
         socket.addEventListener('open', event => {
             localDevice.type = data.deviceType;
             localDevice.coordinates = data.coordinates;
+            localDevice.name = data.deviceName;
 
             socket.send(JSON.stringify({
                 type: "deviceConnected",
@@ -89,8 +89,6 @@ self.addEventListener("message", event => {
      */
     if (data.type === "coordinatesUpdate"){
         localDevice.coordinates = data.coordinates;
-
-        alert(localDevice.coordinates);
 
         // console.log(`Sending coordinates x: ${localDevice.coordinates.x} y: ${localDevice.coordinates.y}`);
         

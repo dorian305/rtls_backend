@@ -16,7 +16,7 @@ body {
     height: 100vh;
 }
 
-#device-id, #connection-status {
+#device-name, #device-id, #connection-status {
     margin: 10px;
     color: white;
     text-align: center;
