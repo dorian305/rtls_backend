@@ -1,4 +1,4 @@
-import {createDeviceName} from "./deviceName.js";
+import {createDeviceName} from "./deviceName.js?ver=1.8";
 
 const coordsElem = document.querySelector("#coordinates");
 const deviceIDElem = document.querySelector("#device-id");
@@ -10,7 +10,7 @@ const coordinatesList = [];
 const numberOfLastSavedCoordinates = 10;
 const sendCoordsToServerInterval = 0.1; // in seconds
 const deviceType = checkDeviceType();
-const worker = new Worker("js/connect/locationUpdater.js?ver=1.7");
+const worker = new Worker("js/connect/locationUpdater.js?ver=1.8");
 
 let deviceName;
 let locationWatcher;
