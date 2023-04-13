@@ -22,6 +22,12 @@ socket.addEventListener('close', event => {
         text: "The connection to the websocket server has been lost.",
         icon: "error",
         confirmButtonText: "Reload",
+        customClass: {
+            container: "swal-container",
+            popup: "swal-popup",
+            confirmButton: "swal-button-confirm",
+            input: "swal-input",
+        },
     }).then(res => {
         if (res.isConfirmed){
             location.reload();
@@ -40,6 +46,12 @@ socket.addEventListener('error', event => {
         text: "An error occured while communicating with the server.",
         icon: "error",
         confirmButtonText: "Reload",
+        customClass: {
+            container: "swal-container",
+            popup: "swal-popup",
+            confirmButton: "swal-button-confirm",
+            input: "swal-input",
+        },
     }).then(res => {
         if (res.isConfirmed){
             location.reload();
@@ -66,6 +78,7 @@ socket.addEventListener('message', event => {
 
         connectedDevices.forEach(device => {
             device.marker = createMarker(device.coordinates);
+            console.log(device);
             addDeviceToList(device);
         });
     }
@@ -181,7 +194,7 @@ const createDeviceElem = function(device){
     deviceInformationElem.setAttribute("class", "device-information");
     deviceImageElem.setAttribute("src", deviceImageSrc);
     deviceImageElem.setAttribute("class", "device-image");
-    spanElem.textContent = device.id;
+    spanElem.textContent = device.name;
     actionButtonsElem.setAttribute("class", "action-buttons");
     actionButtonElem.setAttribute("data-following", "false");
     actionButtonElem.textContent = "Track";

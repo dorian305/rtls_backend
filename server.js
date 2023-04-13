@@ -109,6 +109,7 @@ server.on('connection', socket => {
                 socket: socket,
                 type: receivedData.device.type,
                 coordinates: receivedData.device.coordinates,
+                name: receivedData.device.name,
             };
 
             socket.send(JSON.stringify({

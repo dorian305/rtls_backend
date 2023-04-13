@@ -1,0 +1,16 @@
+.swal-popup {
+    background-color: #19222a !important;
+    color: white !important;
+}
+
+.swal-container {
+}
+
+.swal-input {
+    background-color: #3c4c5a !important;
+}
+
+.swal-button-confirm {
+    background-color: #2b8ced !important;
+    outline: none !important;
+}

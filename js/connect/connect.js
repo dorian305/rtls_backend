@@ -1,5 +1,8 @@
+import {createDeviceName} from "./deviceName.js";
+
 const coordsElem = document.querySelector("#coordinates");
 const deviceIDElem = document.querySelector("#device-id");
+const deviceNameElem = document.querySelector("#device-name");
 const statusElem = document.querySelector("#connection-status");
 const animationPulseElem = document.querySelector("#animation-init");
 
@@ -9,6 +12,7 @@ const sendCoordsToServerInterval = 0.1; // in seconds
 const deviceType = checkDeviceType();
 const worker = new Worker("js/connect/locationUpdater.js?ver=1.7");
 
+let deviceName;
 let locationWatcher;
 let connected = false;
 let fetchedLocationInit = false;
@@ -17,8 +21,15 @@ let lastSmoothedCoordinates = {x: 0, y: 0};
 let coordinatesUpdateInterval = null;
 
 
+createDeviceName()
+.then(data => {
+    deviceName = data;
+    promptClientForLocationServices();
+});
 
-/**
+
+const promptClientForLocationServices = function(){
+    /**
  * Prompting the device for location services.
  * If location services are denied, displays the message to user to allow it.
  * 
@@ -36,6 +47,7 @@ else {
 
     locationWatcher = navigator.geolocation.watchPosition(gettingLocationSuccess, gettingLocationError, locationOptions);
 }
+}
 
 
 /**
@@ -51,6 +63,7 @@ worker.addEventListener("message", event => {
      * Worker has successfully connected to the server.
      */
     if (data.type === "connectionSuccess"){
+        deviceNameElem.innerHTML = `Device name:<br>${deviceName}`;
         statusElem.textContent = "Connected to the server.";
         animationPulseElem.id = "animation-pulse";
         connected = true;
@@ -80,6 +93,12 @@ worker.addEventListener("message", event => {
             text: "Connection to the server has been lost.",
             icon: "error",
             confirmButtonText: "Reload",
+            customClass: {
+                container: "swal-container",
+                popup: "swal-popup",
+                confirmButton: "swal-button-confirm",
+                input: "swal-input",
+            },
         }).then(res => {
             if (res.isConfirmed){
                 location.reload();
@@ -169,6 +188,7 @@ function gettingLocationSuccess(position){
             type: "connectToServer",
             deviceType: deviceType,
             coordinates: smoothedCoordinates,
+            deviceName: deviceName,
         });
 
         statusElem.textContent = "Connecting to the server...";
