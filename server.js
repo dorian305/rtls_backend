@@ -106,7 +106,6 @@ server.on('connection', socket => {
              */
             const newlyConnectedDevice = {
                 id: socket.id,
-                socket: socket,
                 type: receivedData.device.type,
                 coordinates: receivedData.device.coordinates,
                 name: receivedData.device.name,
