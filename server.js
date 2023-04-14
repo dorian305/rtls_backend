@@ -108,7 +108,7 @@ server.on('connection', socket => {
                 id: socket.id,
                 type: receivedData.device.type,
                 coordinates: receivedData.device.coordinates,
-                name: receivedData.device.name,
+                name: cleanName(receivedData.device.name),
             };
 
             socket.send(JSON.stringify({
@@ -242,3 +242,14 @@ const pingConnectedClients = function(){
     }, pongServerTimeoutS * 1000);
 }
 setInterval(pingConnectedClients, pingClientsIntervalS * 1000);
+
+
+
+function cleanName(inputString) {
+    const allowedCharsRegex = /^[a-zA-Z0-9 _.]+$/;
+    const cleanedString = inputString.replace(/[^a-zA-Z0-9 _.]/g, '');
+
+    // Return the cleaned input string
+    return cleanedString;
+}
+  

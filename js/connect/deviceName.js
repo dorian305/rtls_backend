@@ -1,5 +1,6 @@
 export const createDeviceName = async () => {
-    let deviceName;
+    const nameLengthAllowed = 10;
+    let deviceName = "";
 
     await Swal.fire({
         title: "Device name:",
@@ -7,10 +8,11 @@ export const createDeviceName = async () => {
         inputLabel: "Please insert the name which will be used for your device",
         allowEscapeKey: false,
         allowOutsideClick: false,
-        inputValidator: value => {
-            if (!value) return "We need the name of the device!";
+        inputValidator: insertedName => {
+            if (!insertedName) return "We need the name of the device!";
+            if (insertedName.length > nameLengthAllowed) return `Please insert shorter name! (${nameLengthAllowed} characters)`;
 
-            deviceName = value;
+            deviceName = insertedName;
         },
         customClass: {
             container: "swal-container",
