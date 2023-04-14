@@ -77,8 +77,7 @@ socket.addEventListener('message', event => {
         socketId = data.socketId;
 
         connectedDevices.forEach(device => {
-            device.marker = createMarker(device.coordinates);
-            console.log(device);
+            device.marker = createMarker(device);
             addDeviceToList(device);
         });
     }
@@ -114,7 +113,7 @@ socket.addEventListener('message', event => {
          */
         const newlyConnectedDevice = data.device
         
-        newlyConnectedDevice.marker = createMarker(newlyConnectedDevice.coordinates)
+        newlyConnectedDevice.marker = createMarker(newlyConnectedDevice)
         connectedDevices.push(newlyConnectedDevice);
 
         addDeviceToList(newlyConnectedDevice);

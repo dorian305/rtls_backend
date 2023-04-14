@@ -153,3 +153,15 @@ main {
 .action-buttons button:hover {
     background-color: #65b2ff;
 }
+
+.marker-tooltip {
+    border: none !important;
+    background-color: #f3f3f3  !important;
+    color: black !important;
+    border-radius: 5px !important;
+    opacity: 0.9 !important;
+}
+
+.marker-tooltip:before {
+    border-top-color: #f3f3f3  !important;
+}

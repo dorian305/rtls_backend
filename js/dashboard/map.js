@@ -22,8 +22,18 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
  * Creates a marker at the given coordinates (usually the connected device's coordinates),
  * adds it to the markers group and returns the newly created marker to be stored with the device information.
  */
-const createMarker = function(coordinates){
-	const deviceMarker = L.marker([coordinates.x, coordinates.y]);
+const createMarker = function(device){
+	const latitude = device.coordinates.x;
+	const longitude = device.coordinates.y;
+	const deviceMarker = L.marker([latitude, longitude]);
+	const tooltipOptions = {
+		permanent: true,
+		direction: "top",
+		className: "marker-tooltip",
+		offset: L.point(-15, -20),
+	}
+
+	deviceMarker.bindTooltip(device.name, tooltipOptions);
 	deviceMarker.addTo(markers);
 	
 	return deviceMarker;
