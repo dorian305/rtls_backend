@@ -109,6 +109,7 @@ server.on('connection', socket => {
                 type: receivedData.device.type,
                 coordinates: receivedData.device.coordinates,
                 name: cleanName(receivedData.device.name),
+                battery: receivedData.device.battery,
             };
 
             socket.send(JSON.stringify({
@@ -132,15 +133,16 @@ server.on('connection', socket => {
 
 
 
-        if (receivedData.type === "locationUpdate"){
+        if (receivedData.type === "dataUpdate"){
             /**
-             * All the connected devices periodically send updated location information.
+             * All the connected devices periodically send updated information.
              * Update the stored device information with new information.
              * 
              * Send the updated information to the dashboard for display.
              */
             const storedDeviceToUpdate = connectedDevices[connectedDevices.findIndex(device => device.id === receivedData.device.id)];
 
+            storedDeviceToUpdate.battery = receivedData.device.battery;
             storedDeviceToUpdate.coordinates.x = receivedData.device.coordinates.x;
             storedDeviceToUpdate.coordinates.y = receivedData.device.coordinates.y;
 
@@ -150,7 +152,7 @@ server.on('connection', socket => {
             if (dashboardSockets){
                 dashboardSockets.forEach(dashboardSocket => {
                     dashboardSocket.send(JSON.stringify({
-                        type: "locationUpdate",
+                        type: "dataUpdate",
                         device: storedDeviceToUpdate,
                     }));
                 })
